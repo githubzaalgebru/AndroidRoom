@@ -5,19 +5,19 @@
     android:layout_height="match_parent" >
 
     <EditText
-        android:id="@+id/et1"
+        android:id="@+id/etTitle"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Hello World!" />
+        android:layout_height="wrap_content"
+        android:hint="Title" />
 
     <EditText
-        android:id="@+id/et2"
-        android:layout_width="wrap_content"
+        android:id="@+id/etDescription"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:hint="Description" />
 
     <Button
-        android:id="@+id/bSpremi"
+        android:id="@+id/bSave"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Spremi" />
