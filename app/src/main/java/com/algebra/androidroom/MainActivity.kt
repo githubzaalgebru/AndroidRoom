@@ -8,29 +8,39 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.algebra.androidroom.database.AppDatabase
 import com.algebra.androidroom.model.TodoEntity
 import com.algebra.androidroom.ui.TodosAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity( ) {
 
+    private val adapter = TodosAdapter( )
+    private lateinit var db : AppDatabase
+
     override fun onCreate( savedInstanceState: Bundle? ) {
         super.onCreate( savedInstanceState )
         setContentView( R.layout.activity_main )
 
+        db = AppDatabase( this )
+
         setupListeners( )
         rView.layoutManager = LinearLayoutManager( this )
-        rView.adapter       = TodosAdapter( )
-        ( rView.adapter as TodosAdapter ).todos = mockList( )
+        rView.adapter       = adapter
+
+        adapter.todos = db.todoDao( ).getAll( )
+
     }
 
     private fun setupListeners( ) {
         bSave.setOnClickListener {
             val todo = readNewTodo( )
             if( todo!=null ) {
-                Toast
-                    .makeText( this, "Todo $todo loaded", Toast.LENGTH_SHORT )
-                    .show( )
+                db.todoDao( ).insert( todo )
+                adapter.todos = db.todoDao( ).getAll( )
+                etTitle.setText( "" )
+                etDescription.setText( "" )
+                etTitle.requestFocus( )
             }
         }
     }
@@ -59,20 +69,5 @@ class MainActivity : AppCompatActivity( ) {
             return null
         }
         return TodoEntity( 0, title, description )
-    }
-
-    private fun mockList( ) : List< TodoEntity > {
-        val lista = mutableListOf< TodoEntity >( )
-        lista.add( TodoEntity( 1,  "Zajutrak", "Vrlo rano" ))
-        lista.add( TodoEntity( 2,  "Doručak", "Oko 8" ) )
-        lista.add( TodoEntity( 3,  "Ručak", "U podne" ) )
-        lista.add( TodoEntity( 4,  "Kava", "Prije doručka" ) )
-        lista.add( TodoEntity( 5,  "Večera", "Oko 19" ) )
-        lista.add( TodoEntity( 6,  "Odmor", "Iza ručka" ) )
-        lista.add( TodoEntity( 7,  "Posao", "Od 8:30 do 16:30" ) )
-        lista.add( TodoEntity( 8,  "Pauza", "U 12" ) )
-        lista.add( TodoEntity( 9,  "Igra", "U 17:00" ) )
-        lista.add( TodoEntity( 10, "Spavanje", "22:00" ) )
-        return lista
     }
 }
