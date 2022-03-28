@@ -11,9 +11,9 @@ class AppExecutors private constructor(
     private val mainThread : Executor
 ) {
 
-    fun diskIO(): Executor = diskIO
-    fun mainThread(): Executor = mainThread
-    fun networkIO(): Executor = networkIO
+    fun diskIO( )     : Executor = diskIO
+    fun mainThread( ) : Executor = mainThread
+    fun networkIO( )  : Executor = networkIO
 
     private class MainThreadExecutor : Executor {
         private val mainThreadHandler = Handler(Looper.getMainLooper())

@@ -6,15 +6,17 @@ import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.algebra.androidroom.database.AppDatabase
+import com.algebra.androidroom.database.AppExecutors
 import com.algebra.androidroom.model.TodoEntity
 import com.algebra.androidroom.ui.TodosAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity( ) {
 
-    private lateinit var handler : Handler
+//  private lateinit var handler : Handler
     private val adapter = TodosAdapter( )
     private lateinit var db : AppDatabase
 
@@ -22,16 +24,22 @@ class MainActivity : AppCompatActivity( ) {
         super.onCreate( savedInstanceState )
         setContentView( R.layout.activity_main )
 
-        handler = Handler( )
+//      handler = Handler( )
         db = AppDatabase( this )
 
         setupListeners( )
         rView.layoutManager = LinearLayoutManager( this )
         rView.adapter       = adapter
+
+        db.todoDao( ).getAll( ).observe( this, Observer < List< TodoEntity > > {
+            adapter.todos = it
+        } )
+
+/*
         Thread {
             adapter.todos = db.todoDao( ).getAll( )
         }.start( )
-
+*/
 
     }
 
@@ -39,6 +47,17 @@ class MainActivity : AppCompatActivity( ) {
         bSave.setOnClickListener {
             val todo = readNewTodo( )
             if( todo!=null ) {
+                AppExecutors.instance?.diskIO( )?.execute( Runnable {
+                    db.todoDao( ).insert( todo )
+/*
+                    val listaTodo = db.todoDao( ).getAll( )
+                    AppExecutors.instance?.mainThread( )?.execute( Runnable {
+                        makeTodosTable( listaTodo )
+                    } )
+
+*/
+                } )
+                /*
                 Thread {
                     db.todoDao( ).insert( todo )
                     val listaTodo = db.todoDao( ).getAll( )
@@ -46,6 +65,7 @@ class MainActivity : AppCompatActivity( ) {
                         makeTodosTable( listaTodo )
                     } )
                 }.start( )
+               */
             }
         }
 
@@ -53,24 +73,29 @@ class MainActivity : AppCompatActivity( ) {
             val title = etTitle.text.toString( ).trim( )
             val description = etDescription.text.toString( ).trim( )
             if( title=="" && description=="" )
-                makeTodosTable( db.todoDao( ).getAll( ) )
+                AppExecutors.instance?.diskIO( )?.execute( Runnable {
+                    val poDesc = db.todoDao( ).getAllAsList( )
+                    AppExecutors.instance?.mainThread( )?.execute( Runnable {
+                        makeTodosTable( poDesc )
+                    } )
+                } )
             else if( title!="" && description!="" )
                 Toast.makeText( this, "Only one field may be filled", Toast.LENGTH_SHORT ).show( )
             else {
                 if( title=="" ) {
-                    Thread {
+                    AppExecutors.instance?.diskIO( )?.execute( Runnable {
                         val poDesc = db.todoDao( ).getByDesc( description )
-                        handler.post( Runnable {
+                        AppExecutors.instance?.mainThread( )?.execute( Runnable {
                             makeTodosTable( poDesc )
                         } )
-                    }.start( )
+                    } )
                 } else {
-                    Thread {
+                    AppExecutors.instance?.diskIO( )?.execute( Runnable  {
                         val poTitle = db.todoDao( ).getByTitle( title )
-                        handler.post( Runnable {
+                        AppExecutors.instance?.mainThread( )?.execute( Runnable {
                             makeTodosTable( poTitle )
                         } )
-                    }.start( )
+                    } )
                 }
             }
         }
@@ -83,13 +108,15 @@ class MainActivity : AppCompatActivity( ) {
 
     override fun onOptionsItemSelected( item : MenuItem ) : Boolean {
         if( item.itemId==R.id.deleteAll ) {
-            Thread {
+            AppExecutors.instance?.diskIO( )?.execute( Runnable {
                 db.todoDao( ).deleteAll( )
+/*
                 val sve = db.todoDao( ).getAll( )
-                handler.post( Runnable {
+                AppExecutors.instance?.mainThread( )?.execute( Runnable {
                     makeTodosTable( sve )
                 } )
-            }.start( )
+*/
+            } )
         }
         return true
     }

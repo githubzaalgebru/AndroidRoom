@@ -1,5 +1,6 @@
 package com.algebra.androidroom.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -9,7 +10,10 @@ import com.algebra.androidroom.model.TodoEntity
 interface TodoDao {
 
     @Query( "SELECT * FROM todo_items" )
-    fun getAll( ) : List< TodoEntity >
+    fun getAll( ) : LiveData< List< TodoEntity > >
+
+    @Query( "SELECT * FROM todo_items" )
+    fun getAllAsList( ): List< TodoEntity >
 
     @Query( "SELECT * FROM todo_items WHERE title LIKE '%' || :param || '%'" )
     fun getByTitle( param : String? ): List< TodoEntity >
