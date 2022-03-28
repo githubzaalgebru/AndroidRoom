@@ -2,10 +2,9 @@ package com.algebra.androidroom
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.algebra.androidroom.database.AppDatabase
@@ -15,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity( ) {
 
+    private lateinit var handler : Handler
     private val adapter = TodosAdapter( )
     private lateinit var db : AppDatabase
 
@@ -22,13 +22,16 @@ class MainActivity : AppCompatActivity( ) {
         super.onCreate( savedInstanceState )
         setContentView( R.layout.activity_main )
 
+        handler = Handler( )
         db = AppDatabase( this )
 
         setupListeners( )
         rView.layoutManager = LinearLayoutManager( this )
         rView.adapter       = adapter
+        Thread {
+            adapter.todos = db.todoDao( ).getAll( )
+        }.start( )
 
-        adapter.todos = db.todoDao( ).getAll( )
 
     }
 
@@ -36,8 +39,13 @@ class MainActivity : AppCompatActivity( ) {
         bSave.setOnClickListener {
             val todo = readNewTodo( )
             if( todo!=null ) {
-                db.todoDao( ).insert( todo )
-                makeTodosTable( db.todoDao( ).getAll( ) )
+                Thread {
+                    db.todoDao( ).insert( todo )
+                    val listaTodo = db.todoDao( ).getAll( )
+                    handler.post( Runnable {
+                        makeTodosTable( listaTodo )
+                    } )
+                }.start( )
             }
         }
 
@@ -50,10 +58,19 @@ class MainActivity : AppCompatActivity( ) {
                 Toast.makeText( this, "Only one field may be filled", Toast.LENGTH_SHORT ).show( )
             else {
                 if( title=="" ) {
-                    makeTodosTable( db.todoDao( ).getByDesc( description ) )
+                    Thread {
+                        val poDesc = db.todoDao( ).getByDesc( description )
+                        handler.post( Runnable {
+                            makeTodosTable( poDesc )
+                        } )
+                    }.start( )
                 } else {
-                    val poNaslovu = db.todoDao( ).getByTitle( title )
-                    makeTodosTable( poNaslovu )
+                    Thread {
+                        val poTitle = db.todoDao( ).getByTitle( title )
+                        handler.post( Runnable {
+                            makeTodosTable( poTitle )
+                        } )
+                    }.start( )
                 }
             }
         }
@@ -66,8 +83,13 @@ class MainActivity : AppCompatActivity( ) {
 
     override fun onOptionsItemSelected( item : MenuItem ) : Boolean {
         if( item.itemId==R.id.deleteAll ) {
-            db.todoDao( ).deleteAll( )
-            makeTodosTable( db.todoDao( ).getAll( ) )
+            Thread {
+                db.todoDao( ).deleteAll( )
+                val sve = db.todoDao( ).getAll( )
+                handler.post( Runnable {
+                    makeTodosTable( sve )
+                } )
+            }.start( )
         }
         return true
     }
