@@ -22,6 +22,12 @@
         android:layout_height="wrap_content"
         android:text="Save" />
 
+    <Button
+        android:id="@+id/bQuery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Query" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rView"
         android:layout_width="match_parent"

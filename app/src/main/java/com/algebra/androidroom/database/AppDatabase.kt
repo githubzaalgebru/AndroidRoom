@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import com.algebra.androidroom.dao.TodoDao
 import com.algebra.androidroom.model.TodoEntity
 
+
 @Database( entities = arrayOf( TodoEntity::class ), version = 1 )
 abstract class AppDatabase : RoomDatabase( ) {
 

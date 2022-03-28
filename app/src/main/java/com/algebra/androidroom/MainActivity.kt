@@ -37,10 +37,24 @@ class MainActivity : AppCompatActivity( ) {
             val todo = readNewTodo( )
             if( todo!=null ) {
                 db.todoDao( ).insert( todo )
-                adapter.todos = db.todoDao( ).getAll( )
-                etTitle.setText( "" )
-                etDescription.setText( "" )
-                etTitle.requestFocus( )
+                makeTodosTable( db.todoDao( ).getAll( ) )
+            }
+        }
+
+        bQuery.setOnClickListener {
+            val title = etTitle.text.toString( ).trim( )
+            val description = etDescription.text.toString( ).trim( )
+            if( title=="" && description=="" )
+                makeTodosTable( db.todoDao( ).getAll( ) )
+            else if( title!="" && description!="" )
+                Toast.makeText( this, "Only one field may be filled", Toast.LENGTH_SHORT ).show( )
+            else {
+                if( title=="" ) {
+                    makeTodosTable( db.todoDao( ).getByDesc( description ) )
+                } else {
+                    val poNaslovu = db.todoDao( ).getByTitle( title )
+                    makeTodosTable( poNaslovu )
+                }
             }
         }
     }
@@ -52,7 +66,8 @@ class MainActivity : AppCompatActivity( ) {
 
     override fun onOptionsItemSelected( item : MenuItem ) : Boolean {
         if( item.itemId==R.id.deleteAll ) {
-            Toast.makeText( this, "Brisanje svega...", Toast.LENGTH_SHORT ).show( )
+            db.todoDao( ).deleteAll( )
+            makeTodosTable( db.todoDao( ).getAll( ) )
         }
         return true
     }
@@ -69,5 +84,12 @@ class MainActivity : AppCompatActivity( ) {
             return null
         }
         return TodoEntity( 0, title, description )
+    }
+
+    private fun makeTodosTable( todos : List< TodoEntity > ) {
+        adapter.todos = todos
+        etTitle.setText( "" )
+        etDescription.setText( "" )
+        etTitle.requestFocus( )
     }
 }

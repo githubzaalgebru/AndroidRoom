@@ -11,7 +11,16 @@ interface TodoDao {
     @Query( "SELECT * FROM todo_items" )
     fun getAll( ) : List< TodoEntity >
 
+    @Query( "SELECT * FROM todo_items WHERE title LIKE '%' || :param || '%'" )
+    fun getByTitle( param : String? ): List< TodoEntity >
+
+    @Query( "SELECT * FROM todo_items WHERE content LIKE '%' || :param || '%'" )
+    fun getByDesc( param : String? ): List< TodoEntity >
+
     @Insert
     fun insert( vararg todo : TodoEntity )
+
+    @Query( "DELETE FROM todo_items" )
+    fun deleteAll( )
 
 }
